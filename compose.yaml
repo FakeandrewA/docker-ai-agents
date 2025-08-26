@@ -1,0 +1,39 @@
+services: # dockers compose expects
+
+  backend: #custom name for the service
+    #image: python:3.13.4-slim-bullseye # base image to use
+    build:
+      dockerfile: ./Dockerfile # path to the Dockerfile
+      context: ./backend # context for the build
+    # command: python -m http.server 8000 # command to run in the container
+    # volumes:
+    #   - ./backend/src:/app # mount the local src directory to /app in the container
+    ports:
+      - 8080:8000 # list of ports to expose
+    environment:
+      - PORT=8000
+      
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    develop:
+      watch:
+        - action: rebuild
+          path: ./backend/requirements.txt
+        - action: rebuild
+          path: ./backend/Dockerfile
+        - action: restart
+          path: ./backend/src
+        - action: sync
+          path: ./backend/src
+          target: /app
+
+  static: #custom name for the service
+    #image: python:3.13.4-slim-bullseye # base image to use
+    build:
+      dockerfile: ./Dockerfile # path to the Dockerfile
+      context: ./static # context for the build
+    # command: python -m http.server 8000 # command to run in the container
+    volumes:
+      - ./static/src:/app # mount the local src directory to /app in the container
+    ports:
+      - 8001:8000 # list of ports to expose
+    command: python -m http.server 8000
